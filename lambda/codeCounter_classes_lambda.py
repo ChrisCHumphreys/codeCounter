@@ -53,9 +53,9 @@ class LaunchRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
         #problem with this line
-        total_lines = attr["total_lines"]
         linesPerSecond = attr["lines_per_second"]
         lines_update(attr)
+        total_lines = attr["total_lines"]
         if not attr:
             #print("Ran if not")
             attr['times_played'] = 0
@@ -133,6 +133,7 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
        
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
+        session_attr = handler_input.attributes_manager.session_attributes
         # print(time.time())
         attr.setdefault("time", time.time())
         # print(attr)
@@ -146,6 +147,10 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
             speech_text = f"""Thank you for buying a {tempUpgrade}."""
 
             reprompt = """If you would like to hear the upgrades again just say Upgrades"""
+
+            print(session_attr['lines_per_second'], 'BEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFORE')
+            session_attr['lines_per_second'] += 1
+            print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
 
             handler_input.response_builder.speak(speech_text).ask(reprompt)
             return handler_input.response_builder.response
