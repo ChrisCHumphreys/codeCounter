@@ -39,17 +39,18 @@ class LaunchRequestHandler(AbstractRequestHandler):
         if not attr:
             attr['times_played'] = 0
             attr.setdefault("facts_index", -1)
+            attr.setdefault("total_lines", 0)
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
-														Right now you have 0 lines of Code.  You can write a line of
-														code or I can read you your available upgrades.'''
+                Right now you have 0 lines of Code.  You can write a line of
+                code or I can read you your available upgrades.'''
             reprompt = "Say yes to play the game or no to quit."
         else:
             speech_text = f"""
-                            Welcome to {SKILL_NAME}. 
-														Right now you have 0 lines of Code.  You can write a line of
-														code or I can read you your available upgrades.
+                        Welcome to {SKILL_NAME}. 
+                        Right now you have 0 lines of Code.  You can write a line of
+                        code or I can read you your available upgrades.
                            """
             reprompt = "Say start a new game to hear cat facts or no to quit."
         handler_input.response_builder.speak(speech_text).ask(reprompt)
@@ -60,7 +61,13 @@ class WriteCodeIntentHandler(AbstractRequestHandler):
         return is_intent_name("WriteCodeIntent")(handler_input)
 
     def handle(self, handler_input):
-        speech_text = "You wrote one line of code.  You know have 1 line of code"
+        #total_lines = session_attr["total_lines"]
+        #session_attr = handler_input.attributes_manager.session_attributes
+        #session_attr["total_lines"] += 1
+
+        total_lines = 3        
+
+        speech_text = "You wrote one line of code.  You know have %d line of code" %total_lines
         reprompt = "Code doesn't write itself.  What are you going to do?"
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
