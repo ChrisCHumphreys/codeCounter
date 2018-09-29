@@ -31,17 +31,37 @@ cat_facts = [
 def can_play(session_attr):
     return session_attr['facts_index'] < len(cat_facts)
 
+def check_purchase(item2Check):
+    items = ["monkey", "typewriter"]
+    for i in items:
+        if str(item2Check) == i:
+            return True
+    return False
+
+def lines_update(attr):
+    last_Time = attr["time"]
+    attr["time"] = int(time.time())
+    linesPerSecond = attr["lines_per_second"]
+    secDifference = int(time.time()) - last_Time
+    attr["total_lines"] += int(int(linesPerSecond) * secDifference)
+    # print(attr["total_lines"], "HEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRRREEEEEEEEEEEEEEE!!!!!!!!!!!!!")
+
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
-        total_lines = attr['total_lines']
+        #problem with this line
+        total_lines = attr["total_lines"]
+        linesPerSecond = attr["lines_per_second"]
+        lines_update(attr)
         if not attr:
+            #print("Ran if not")
             attr['times_played'] = 0
             attr.setdefault("facts_index", -1)
             attr.setdefault("total_lines", 0)
+            attr.setdefault("time", time.time())
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
@@ -58,11 +78,29 @@ class LaunchRequestHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
+class TheBestIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("TheBestIntent")(handler_input)
+    
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        speech_text = """
+                        Brayden is totally the best. 
+                        He is so much better than whoever the other guy who worked on me is. 
+                        Brayden is just like so amazing. He just does all of the things so well, has great abs, and totally is not a narcissist who is making me say this.
+                        The other guy who worked on me is so totally not awesome.
+                        He also takes a really long time in the bathroom which worries me.
+                        """
+        reprompt = "Do you agree?"
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 class WriteCodeIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("WriteCodeIntent")(handler_input)
 
     def handle(self, handler_input):
+        #Seems to be a difference in session and persistent attributes
         session_attr = handler_input.attributes_manager.session_attributes
         session_attr["total_lines"] += 1
         total_lines = session_attr["total_lines"]
@@ -95,21 +133,29 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
        
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
-        print(time.time())
+        # print(time.time())
         attr.setdefault("time", time.time())
         # print(attr)
         slots = handler_input.request_envelope.request.intent.slots
         tempUpgrade = slots['upgrade'].value
+        #print("HERE!!!!!", slots['upgrade'].value)
         
         #if (tempUpgrade == null):
             # delegate 
+        if check_purchase(tempUpgrade) == True:
+            speech_text = f"""Thank you for buying a {tempUpgrade}."""
 
-        speech_text = f"""Thank you for buying a {tempUpgrade}."""
+            reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
-        reprompt = """If you would like to hear the upgrades again just say Upgrades"""
+            handler_input.response_builder.speak(speech_text).ask(reprompt)
+            return handler_input.response_builder.response
+        else:
+            speech_text = f"""{tempUpgrade} is not a valid item."""
 
-        handler_input.response_builder.speak(speech_text).ask(reprompt)
-        return handler_input.response_builder.response
+            reprompt = """Please say buy and the name of a valid item to purchase an upgrade"""
+            
+            handler_input.response_builder.speak(speech_text).ask(reprompt)
+            return handler_input.response_builder.response
 
 class FactNumberIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -134,6 +180,17 @@ class FactNumberIntentHandler(AbstractRequestHandler):
                           """
             reprompt = "Say a number between 1 and 10 to get a fact."
 
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+class LinesPerSecondIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("LinesPerSecondIntent")(handler_input)
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        linesPerSecond = session_attr["lines_per_second"]
+        speech_text = f"You are writing {linesPerSecond} lines per second."
+        reprompt = "If you would like to write more lines per second please say buy and the name of the upgrade you would like to purchase."
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
@@ -282,7 +339,9 @@ sb.request_handlers.extend([
     FallbackIntentHandler(),
     WriteCodeIntentHandler(),
     ListUpgradesIntentHandler(),
-    BuyUpgradeIntentHandler()
+    BuyUpgradeIntentHandler(),
+    LinesPerSecondIntentHandler(),
+    TheBestIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
