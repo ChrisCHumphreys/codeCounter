@@ -72,12 +72,13 @@ class WriteCodeIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
-'''
-class UpgradesIntentHandler(AbstractRequestHandler):
+
+class ListUpgradesIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return is_intent_name("UpgradesIntent")(handler_input)
+        return is_intent_name("ListUpgradesIntent")(handler_input)
        
     def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
 
         speech_text = """One upgrade available, a monkey/tyepwriter combo.  It costs 10 lines of code,
                        but produces 1 line of code per second."""
@@ -86,7 +87,7 @@ class UpgradesIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
-'''
+
 class FactNumberIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("FactNumberIntent")(handler_input)
@@ -256,8 +257,9 @@ sb.request_handlers.extend([
     YesIntentHandler(),
     NoIntentHandler(),
     FallbackIntentHandler(),
-    WriteCodeIntentHandler()			# ,
+    WriteCodeIntentHandler(),
     # UnhandledIntentHandler()
+    ListUpgradesIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
