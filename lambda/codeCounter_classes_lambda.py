@@ -36,6 +36,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
+        total_lines = attr['total_lines']
         if not attr:
             attr['times_played'] = 0
             attr.setdefault("facts_index", -1)
@@ -43,13 +44,13 @@ class LaunchRequestHandler(AbstractRequestHandler):
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
-                Right now you have 0 lines of Code.  You can write a line of
+                Right now you have {total_lines} lines of Code.  You can write a line of
                 code or I can read you your available upgrades.'''
             reprompt = "Say yes to play the game or no to quit."
         else:
             speech_text = f"""
                         Welcome to {SKILL_NAME}. 
-                        Right now you have 0 lines of Code.  You can write a line of
+                        Right now you have {total_lines} lines of Code.  You can write a line of
                         code or I can read you your available upgrades.
                            """
             reprompt = "Say start a new game to hear cat facts or no to quit."
@@ -61,13 +62,12 @@ class WriteCodeIntentHandler(AbstractRequestHandler):
         return is_intent_name("WriteCodeIntent")(handler_input)
 
     def handle(self, handler_input):
-        #total_lines = session_attr["total_lines"]
-        #session_attr = handler_input.attributes_manager.session_attributes
-        #session_attr["total_lines"] += 1
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr["total_lines"] += 1
+        total_lines = session_attr["total_lines"]
 
-        total_lines = 3        
 
-        speech_text = "You wrote one line of code.  You know have %d line of code" %total_lines
+        speech_text = "You wrote one line of code.  You know have %d lines of code" %total_lines
         reprompt = "Code doesn't write itself.  What are you going to do?"
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
@@ -192,8 +192,8 @@ class FallbackIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         speech_text = f"""
                         I cannot help you with that.
-                        I'm the {SKILL_NAME} and I will share cat facts with you.
-                        Want to hear a new fact?
+                        I'm the {SKILL_NAME} and I will help you write code.
+                        Want to write code?
                        """
         reprompt = "Say yes to start the game or no to quit."
 
