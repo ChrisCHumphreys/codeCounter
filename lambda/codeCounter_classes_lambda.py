@@ -1,5 +1,5 @@
 import os
-
+import time
 from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 import ask_sdk_dynamodb
@@ -13,6 +13,7 @@ SKILL_NAME = 'code counter'
 sb = StandardSkillBuilder(
     table_name=skill_persistence_table, auto_create_table=False, 
 partition_keygen=ask_sdk_dynamodb.partition_keygen.user_id_partition_keygen)
+
 
 cat_facts = [
 "A cat usually has about 12 whiskers on each side of its face.",
@@ -82,6 +83,28 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
 
         speech_text = """One upgrade available, a monkey/tyepwriter combo.  It costs 10 lines of code,
                        but produces 1 line of code per second."""
+
+        reprompt = """If you would like to hear the upgrades again just say Upgrades"""
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+class BuyUpgradeIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("BuyUpgradeIntent")(handler_input)
+       
+    def handle(self, handler_input):
+        attr = handler_input.attributes_manager.persistent_attributes
+        print(time.time())
+        attr.setdefault("time", time.time())
+        # print(attr)
+        slots = handler_input.request_envelope.request.intent.slots
+        tempUpgrade = slots['upgrade'].value
+        
+        #if (tempUpgrade == null):
+            # delegate 
+
+        speech_text = f"""Thank you for buying a {tempUpgrade}."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
@@ -258,8 +281,8 @@ sb.request_handlers.extend([
     NoIntentHandler(),
     FallbackIntentHandler(),
     WriteCodeIntentHandler(),
-    # UnhandledIntentHandler()
-    ListUpgradesIntentHandler()
+    ListUpgradesIntentHandler(),
+    BuyUpgradeIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
