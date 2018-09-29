@@ -55,6 +55,17 @@ class LaunchRequestHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
+class WriteCodeIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("WriteCodeIntent")(handler_input)
+
+    def handle(self, handler_input):
+        speech_text = "You wrote one line of code.  You know have 1 line of code"
+        reprompt = "Code doesn't write itself.  What are you going to do?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 class FactNumberIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("FactNumberIntent")(handler_input)
@@ -223,7 +234,8 @@ sb.request_handlers.extend([
     SessionEndedRequestHandler(),
     YesIntentHandler(),
     NoIntentHandler(),
-    FallbackIntentHandler()			# ,
+    FallbackIntentHandler(),
+    WriteCodeIntentHandler()			# ,
     # UnhandledIntentHandler()
 ])
 
