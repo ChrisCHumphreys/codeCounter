@@ -3,7 +3,7 @@ import os
 from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 import ask_sdk_dynamodb
-from data import cat_facts
+from data import codeCounterData
 from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler, \
     AbstractRequestInterceptor, AbstractResponseInterceptor
 
@@ -51,7 +51,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
                            """
             reprompt = "Say start a new game to hear cat facts or no to quit."
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class FactNumberIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -77,7 +77,7 @@ class FactNumberIntentHandler(AbstractRequestHandler):
             reprompt = "Say a number between 1 and 10 to get a fact."
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class StartOverIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -90,7 +90,7 @@ class StartOverIntentHandler(AbstractRequestHandler):
         speech_text = f"You'll now start a new {SKILL_NAME} game. Want to hear a new fact?"
         reprompt = "Say yes to hear a new fact or no to stop the game."
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -101,7 +101,7 @@ class HelpIntentHandler(AbstractRequestHandler):
         reprompt = "Say yes to hear a fact."
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 def persist_user_attributes(handler_input):
     session_attr = handler_input.attributes_manager.session_attributes
@@ -120,7 +120,7 @@ class StopOrCancelIntentHandler(AbstractRequestHandler):
         persist_user_attributes(handler_input)
         handler_input.response_builder.speak(
             speech_text).set_should_end_session(True)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class SessionEndedRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -130,7 +130,7 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
         print(
             f"Reason for ending session: {handler_input.request_envelope.request.reason}")
         persist_user_attributes(handler_input)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class YesIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -152,7 +152,7 @@ class YesIntentHandler(AbstractRequestHandler):
             reprompt = "Say start a new game to hear cat facts or no to quit."
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class NoIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -163,7 +163,7 @@ class NoIntentHandler(AbstractRequestHandler):
         persist_user_attributes(handler_input)
         handler_input.response_builder.speak(
             speech_text).set_should_end_session(True)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class FallbackIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -178,7 +178,7 @@ class FallbackIntentHandler(AbstractRequestHandler):
         reprompt = "Say yes to start the game or no to quit."
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 class AllExceptionHandler(AbstractExceptionHandler):
     def can_handle(self, handler_input, exception):
@@ -188,7 +188,7 @@ class AllExceptionHandler(AbstractExceptionHandler):
         print(f"Encountered following exception: {exception}")
         speech = "I don't understand that. Please say it again. "
         handler_input.response_builder.speak(speech).ask(speech)
-return handler_input.response_builder.response
+        return handler_input.response_builder.response
 
 def get_device_id(handler_input):
     return ask_sdk_dynamodb.partition_keygen.device_id_partition_keygen(
@@ -204,12 +204,12 @@ class LoggingRequestInterceptor(AbstractRequestInterceptor):
     def process(self, handler_input):
         print(f"Incoming request {handler_input.request_envelope}")
         print(f"user id {get_user_id(handler_input)}")
-				print(f"device id {get_device_id(handler_input)}")
+        print(f"device id {get_device_id(handler_input)}")
 
 
 class LoggingResponseInterceptor(AbstractResponseInterceptor):
     def process(self, handler_input, response):
-print(f"Response : {response}")
+        print(f"Response : {response}")
 
 # Need to explicitly register each one
 sb.request_handlers.extend([
