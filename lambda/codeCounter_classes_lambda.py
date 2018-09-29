@@ -3,7 +3,7 @@ import os
 from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 import ask_sdk_dynamodb
-from data import codeCounterData
+# from data import cat_facts
 from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler, \
     AbstractRequestInterceptor, AbstractResponseInterceptor
 
@@ -41,13 +41,15 @@ class LaunchRequestHandler(AbstractRequestHandler):
             attr.setdefault("facts_index", -1)
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
-            speech_text = f"Welcome to {SKILL_NAME}. Want to play?"
+            speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
+														Right now you have 0 lines of Code.  You can write a line of
+														code or I can read you your available upgrades.'''
             reprompt = "Say yes to play the game or no to quit."
         else:
             speech_text = f"""
                             Welcome to {SKILL_NAME}. 
-                            There are no more cat facts for me to tell you. 
-                            Start a new game to rehear the facts or say no to quit.
+														Right now you have 0 lines of Code.  You can write a line of
+														code or I can read you your available upgrades.
                            """
             reprompt = "Say start a new game to hear cat facts or no to quit."
         handler_input.response_builder.speak(speech_text).ask(reprompt)
@@ -221,8 +223,8 @@ sb.request_handlers.extend([
     SessionEndedRequestHandler(),
     YesIntentHandler(),
     NoIntentHandler(),
-    FallbackIntentHandler(),
-    UnhandledIntentHandler()
+    FallbackIntentHandler()			# ,
+    # UnhandledIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
