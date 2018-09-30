@@ -71,11 +71,11 @@ class LaunchRequestHandler(AbstractRequestHandler):
         if not attr:
             #print("Ran if not")
             attr['times_played'] = 0
-            attr.setdefault("lines_per_second", 1)
+            #attr.setdefault("lines_per_second", 0)
             attr.setdefault("facts_index", -1)
-            attr.setdefault("total_lines", 0)
+            #attr.setdefault("total_lines", 0)
             attr.setdefault("time", time.time())
-            attr.setdefault("monkeys", 0)
+            #attr.setdefault("monkeys", 0)
             attr.setdefault("cats", 0)
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
@@ -89,7 +89,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
                         Right now you have {total_lines} lines of Code.  You can write a line of
                         code or I can read you your available upgrades.
                            """
-            reprompt = "Say start a new game to hear cat facts or no to quit."
+            reprompt = "What would you like to do?"
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
@@ -204,7 +204,7 @@ class FactNumberIntentHandler(AbstractRequestHandler):
             session_attr = handler_input.attributes_manager.session_attributes
             session_attr["facts_index"] = fact_index
             speech_text = f"""
-                            Here's a cat fact: {current_fact} 
+                          Here's a cat fact: {current_fact} 
                             Want to hear another fact?
                            """
             reprompt = "Say yes to hear a cat fact or no to quit."
@@ -229,18 +229,24 @@ class LinesPerSecondIntentHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
-class StartOverIntentHandler(AbstractRequestHandler):
+class ResetIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.StartOverIntent")(handler_input)
-
+        return is_intent_name("ResetIntent")(handler_input)
     def handle(self, handler_input):
-        # restart playing the facts from the first one
         session_attr = handler_input.attributes_manager.session_attributes
-        session_attr["facts_index"] = -1
-        speech_text = f"You'll now start a new {SKILL_NAME} game. Want to hear a new fact?"
-        reprompt = "Say yes to hear a new fact or no to stop the game."
+        session_attr["total_lines"] = int(0)
+        session_attr["lines_per_second"] = int(0)
+        session_attr["monkeys"] = int(0)
+        session_attr["cats"] = int(0)
+        session_attr["facts_index"] = int(2)
+        session_attr["times_played"] = int(0)
+
+        speech_text = "You lost your company and all of your code in a particulary visicious legal battle with an animal rights group"
+        reprompt = "Would you like to start over?"
+
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -252,6 +258,21 @@ class HelpIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+
+class DemoCheatIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("DemoCheatIntent")(handler_input)
+    def handle(self, handler_input):
+        slots = handler_input.request_envelope.request.intent.slots
+        session_attr = handler_input.attributes_manager.session_attributes
+        cheatAmount = int(slots["cheat_amount"].value)
+        session_attr["total_lines"] += cheatAmount
+        speech_text = "You cheated on me, I can not believe it. I loved you!"
+        reprompt = "Are you at least sorry?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 
 def persist_user_attributes(handler_input):
     session_attr = handler_input.attributes_manager.session_attributes
@@ -292,8 +313,8 @@ class YesIntentHandler(AbstractRequestHandler):
         session_attr["facts_index"] += 1
         if can_play(session_attr):
             current_fact = cat_facts[session_attr["facts_index"]]
-            speech_text = f"Here's a cat fact: {current_fact} Want to hear another fact?"
-            reprompt = "Say yes to hear a cat fact or no to quit."
+            speech_text = f"I am not sure what you mean try again"
+            reprompt = "Please state what you would like to do?"
         else:
             speech_text = """
                            There are no more cat facts for me to tell you. 
@@ -361,6 +382,18 @@ class LoggingResponseInterceptor(AbstractResponseInterceptor):
     def process(self, handler_input, response):
         print(f"Response : {response}")
 
+class StartOverIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("StartOverIntent")(handler_input)
+    def handle(self, handler_input):
+
+        speech_text = "This should never run"
+        reprompt = "Would you like to start over?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+
 # Need to explicitly register each one
 sb.request_handlers.extend([
     LaunchRequestHandler(),
@@ -376,7 +409,9 @@ sb.request_handlers.extend([
     ListUpgradesIntentHandler(),
     BuyUpgradeIntentHandler(),
     LinesPerSecondIntentHandler(),
-    TheBestIntentHandler()
+    TheBestIntentHandler(),
+    DemoCheatIntentHandler(),
+    ResetIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
