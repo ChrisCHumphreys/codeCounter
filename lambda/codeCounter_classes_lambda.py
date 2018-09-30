@@ -32,10 +32,20 @@ def can_play(session_attr):
     return session_attr['facts_index'] < len(cat_facts)
 
 def check_purchase(item2Check):
-    items = ["monkey", "typewriter"]
+    items = ["monkey", "typewriter", "cat", "apple"]
     for i in items:
-        if str(item2Check) == i:
+        if (str(item2Check) == i):
             return True
+    return False
+
+def check_price(item, session_attr):
+    if item == "monkey" or item == "typewriter":
+        cost_of_item = 10
+    elif item == "cat" or item == "apple":
+        cost_of_item = 500
+    total_lines = session_attr["total_lines"]
+    if (total_lines >= cost_of_item):
+        return True
     return False
 
 def lines_update(attr):
@@ -59,6 +69,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
         if not attr:
             #print("Ran if not")
             attr['times_played'] = 0
+            attr.setdefault("lines_per_second", 1)
             attr.setdefault("facts_index", -1)
             attr.setdefault("total_lines", 0)
             attr.setdefault("time", time.time())
@@ -102,6 +113,7 @@ class WriteCodeIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         #Seems to be a difference in session and persistent attributes
         session_attr = handler_input.attributes_manager.session_attributes
+        lines_update(session_attr)
         session_attr["total_lines"] += 1
         total_lines = session_attr["total_lines"]
 
@@ -119,8 +131,9 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
 
-        speech_text = """One upgrade available, a monkey/tyepwriter combo.  It costs 10 lines of code,
-                       but produces 1 line of code per second."""
+        speech_text = """Two upgrades available, a monkey/tyepwriter combo.  It costs 10 lines of code,
+                       but produces 1 line of code per second. Or you can purchase a cat with an apple computer for 500 lines of
+                       code.  It produces 5 lines of additional code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
@@ -144,16 +157,24 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
         #if (tempUpgrade == null):
             # delegate 
         if check_purchase(tempUpgrade) == True:
-            speech_text = f"""Thank you for buying a {tempUpgrade}."""
+            if check_price(tempUpgrade, session_attr) == True:
+                speech_text = f"""Thank you for buying a {tempUpgrade}."""
 
-            reprompt = """If you would like to hear the upgrades again just say Upgrades"""
+                reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
-            print(session_attr['lines_per_second'], 'BEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFORE')
-            session_attr['lines_per_second'] += 1
-            print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
-
-            handler_input.response_builder.speak(speech_text).ask(reprompt)
-            return handler_input.response_builder.response
+                # print(session_attr['lines_per_second'], 'BEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFORE')
+                if tempUpgrade == "monkey" or tempUpgrade == "typewriter":
+                    session_attr['lines_per_second'] += 1
+                elif tempUpgrade == "cat" or tempUpgrade == "apple":
+                    session_attr['lines_per_second'] += 5
+                # print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
+                handler_input.response_builder.speak(speech_text).ask(reprompt)
+                return handler_input.response_builder.response
+            else:
+                speech_text = "You cant afford that upgrade right now"
+                reprompt = "You cant afford that upgrade right now"
+                handler_input.response_builder.speak(speech_text).ask(reprompt)
+                return handler_input.response_builder.response
         else:
             speech_text = f"""{tempUpgrade} is not a valid item."""
 
