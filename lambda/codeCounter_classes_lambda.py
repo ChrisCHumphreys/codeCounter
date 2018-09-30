@@ -112,6 +112,18 @@ class TheBestIntentHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
+class SuggestionIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("SuggestionIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        speech_text = "Well one of the developers does have a problem with commitment,  A K A pushing to the git repo often. I am not going to point any fingers, not that I have any, but the culprit is wearing really dorky pants with pugs on them"
+        reprompt = "No more suggestions"
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+
 class WriteCodeIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("WriteCodeIntent")(handler_input)
@@ -450,7 +462,8 @@ sb.request_handlers.extend([
     DemoCheatIntentHandler(),
     ResetIntentHandler(),
     CodebaseIntentHandler(),
-    QuickMenuIntentHandler()
+    QuickMenuIntentHandler(),
+    SuggestionIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
