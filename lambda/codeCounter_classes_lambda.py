@@ -137,8 +137,8 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
         monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
         cat_cost = int(math.pow(10, session_attr['cats'] + 1))
 
-        speech_text = f"""Two upgrades available, a monkey/tyepwriter combo.  It costs {monkey_cost} lines of code,
-                       but produces 1 line of code per second. Or you can purchase a cat with an apple computer for {cat_cost} lines of
+        speech_text = f"""Two upgrades available, a monkey who knows how to type on a tyepwriter.  He costs {monkey_cost} lines of code,
+                       and produces 1 line of code per second. Or you can purchase a cat who programs on an apple two computer for {cat_cost} lines of
                        code.  It produces 5 lines of additional code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
