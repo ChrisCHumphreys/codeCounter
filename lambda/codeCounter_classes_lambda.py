@@ -140,7 +140,7 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
         cat_cost = int(math.pow(10, session_attr['cats'] + 1))
         octopus_cost = int(math.pow(50, session_attr['octopuses'] + 1))
 
-        speech_text = f"""Two upgrades available, a monkey who knows how to type on a tyepwriter.  He costs {monkey_cost} lines of code,
+        speech_text = f"""Three upgrades available, a monkey who knows how to type on a tyepwriter.  He costs {monkey_cost} lines of code,
                        and produces 1 line of code per second. Or you can purchase a cat who programs on an apple two computer for {cat_cost} lines of code.  It produces 5 lines of additional code per second.  The last upgrade is an octopus who programs on 4 commodore sixty four's at the same time.  She costs {octopus_cost} and generates 25 lines of code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
@@ -231,6 +231,19 @@ class LinesPerSecondIntentHandler(AbstractRequestHandler):
         linesPerSecond = session_attr["lines_per_second"]
         speech_text = f"You are writing {linesPerSecond} lines per second."
         reprompt = "If you would like to write more lines per second please say buy and the name of the upgrade you would like to purchase."
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+class CodebaseIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("CodebaseIntent")(handler_input)
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        attr = handler_input.attributes_manager.persistent_attributes
+        lines_update(session_attr)
+        total_lines = session_attr["total_lines"]
+        speech_text = f"You have written {total_lines} lines of code."
+        reprompt = "Move along"
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
@@ -417,7 +430,8 @@ sb.request_handlers.extend([
     LinesPerSecondIntentHandler(),
     TheBestIntentHandler(),
     DemoCheatIntentHandler(),
-    ResetIntentHandler()
+    ResetIntentHandler(),
+    CodebaseIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
