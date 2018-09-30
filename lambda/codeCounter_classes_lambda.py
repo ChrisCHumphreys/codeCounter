@@ -41,9 +41,9 @@ def check_purchase(item2Check):
 
 def check_price(item, session_attr):
     if item == "monkey" or item == "typewriter":
-        cost_of_item = int(math.pow(5, session_attr['monkeys'] + 1))
+        cost_of_item = int(math.pow(2, session_attr['monkeys'] + 1))
     elif item == "cat" or item == "apple":
-        cost_of_item = ((session_attr['cats'] + 1) * 500)
+        cost_of_item = int(math.pow(10, session_attr['cats'] + 1))
     total_lines = session_attr["total_lines"]
     if (total_lines >= cost_of_item):
         session_attr['total_lines'] -= cost_of_item
@@ -134,8 +134,8 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
        
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
-        monkey_cost = int(math.pow(5, session_attr['monkeys'] + 1))
-        cat_cost = int(500 * (session_attr['cats'] + 1))
+        monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
+        cat_cost = int(math.pow(10, session_attr['cats'] + 1))
 
         speech_text = f"""Two upgrades available, a monkey/tyepwriter combo.  It costs {monkey_cost} lines of code,
                        but produces 1 line of code per second. Or you can purchase a cat with an apple computer for {cat_cost} lines of
