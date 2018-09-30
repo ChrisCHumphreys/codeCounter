@@ -73,6 +73,8 @@ class LaunchRequestHandler(AbstractRequestHandler):
             attr.setdefault("facts_index", -1)
             attr.setdefault("total_lines", 0)
             attr.setdefault("time", time.time())
+            attr.setdefault("monkeys", 0)
+            attr.setdefault("cats", 0)
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
@@ -165,8 +167,10 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
                 # print(session_attr['lines_per_second'], 'BEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFORE')
                 if tempUpgrade == "monkey" or tempUpgrade == "typewriter":
                     session_attr['lines_per_second'] += 1
+                    session_attr['monkeys'] += 1
                 elif tempUpgrade == "cat" or tempUpgrade == "apple":
                     session_attr['lines_per_second'] += 5
+                    session_attr['cats'] += 1
                 # print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
                 handler_input.response_builder.speak(speech_text).ask(reprompt)
                 return handler_input.response_builder.response
