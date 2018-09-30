@@ -41,7 +41,7 @@ def check_purchase(item2Check):
 
 def check_price(item, session_attr):
     if item == "monkey" or item == "typewriter":
-        cost_of_item = math.pow(5, session_attr['monkeys'] + 1)
+        cost_of_item = int(math.pow(5, session_attr['monkeys'] + 1))
     elif item == "cat" or item == "apple":
         cost_of_item = ((session_attr['cats'] + 1) * 500)
     total_lines = session_attr["total_lines"]
@@ -74,7 +74,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
             #attr.setdefault("lines_per_second", 0)
             attr.setdefault("facts_index", -1)
             #attr.setdefault("total_lines", 0)
-            attr.setdefault("time", time.time())
+            attr.setdefault("time", int(time.time()))
             #attr.setdefault("monkeys", 0)
             attr.setdefault("cats", 0)
         handler_input.attributes_manager.session_attributes = attr
@@ -154,7 +154,7 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
         attr = handler_input.attributes_manager.persistent_attributes
         session_attr = handler_input.attributes_manager.session_attributes
         # print(time.time())
-        attr.setdefault("time", time.time())
+        attr.setdefault("time", int(time.time()))
         # print(attr)
         slots = handler_input.request_envelope.request.intent.slots
         tempUpgrade = slots['upgrade'].value
@@ -172,10 +172,10 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
                 # print(session_attr['lines_per_second'], 'BEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFORE')
                 if tempUpgrade == "monkey" or tempUpgrade == "typewriter":
                     session_attr['lines_per_second'] += 1
-                    session_attr['monkeys'] += 1
+                    session_attr['monkeys'] += int(1)
                 elif tempUpgrade == "cat" or tempUpgrade == "apple":
                     session_attr['lines_per_second'] += 5
-                    session_attr['cats'] += 1
+                    session_attr['cats'] += int(1)
                 # print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
                 handler_input.response_builder.speak(speech_text).ask(reprompt)
                 return handler_input.response_builder.response
@@ -238,10 +238,10 @@ class ResetIntentHandler(AbstractRequestHandler):
         session_attr["lines_per_second"] = int(0)
         session_attr["monkeys"] = int(0)
         session_attr["cats"] = int(0)
-        session_attr["facts_index"] = int(2)
+        #session_attr["facts_index"] = int(2)
         session_attr["times_played"] = int(0)
 
-        speech_text = "You lost your company and all of your code in a particulary visicious legal battle with an animal rights group"
+        speech_text = "You lost your company and all of your code in a particulary viscious legal battle with an animal rights group"
         reprompt = "Would you like to start over?"
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
