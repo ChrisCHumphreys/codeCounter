@@ -33,7 +33,7 @@ def can_play(session_attr):
     return session_attr['facts_index'] < len(cat_facts)
 
 def check_purchase(item2Check):
-    items = ["monkey", "typewriter", "cat", "apple"]
+    items = ["monkey", "typewriter", "cat", "apple", "octopus"]
     for i in items:
         if (str(item2Check) == i):
             return True
@@ -44,6 +44,8 @@ def check_price(item, session_attr):
         cost_of_item = int(math.pow(2, session_attr['monkeys'] + 1))
     elif item == "cat" or item == "apple":
         cost_of_item = int(math.pow(10, session_attr['cats'] + 1))
+    elif item == "octopus":
+        cost_of_item = int(math.pow(50, session_attr['octopuses'] + 1))
     total_lines = session_attr["total_lines"]
     if (total_lines >= cost_of_item):
         session_attr['total_lines'] -= cost_of_item
@@ -136,10 +138,10 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
         session_attr = handler_input.attributes_manager.session_attributes
         monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
         cat_cost = int(math.pow(10, session_attr['cats'] + 1))
+        octopus_cost = int(math.pow(50, session_attr['octopuses'] + 1))
 
         speech_text = f"""Two upgrades available, a monkey who knows how to type on a tyepwriter.  He costs {monkey_cost} lines of code,
-                       and produces 1 line of code per second. Or you can purchase a cat who programs on an apple two computer for {cat_cost} lines of
-                       code.  It produces 5 lines of additional code per second."""
+                       and produces 1 line of code per second. Or you can purchase a cat who programs on an apple two computer for {cat_cost} lines of code.  It produces 5 lines of additional code per second.  The last upgrade is an octopus who programs on 4 commodore sixty four's at the same time.  She costs {octopus_cost} and generates 25 lines of code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
@@ -176,6 +178,9 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
                 elif tempUpgrade == "cat" or tempUpgrade == "apple":
                     session_attr['lines_per_second'] += 5
                     session_attr['cats'] += int(1)
+                elif tempUpgrade == "octopus":
+                    session_attr['lines_per_second'] += 25
+                    session_attr['octopuses'] += int(1)
                 # print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
                 handler_input.response_builder.speak(speech_text).ask(reprompt)
                 return handler_input.response_builder.response
@@ -238,6 +243,7 @@ class ResetIntentHandler(AbstractRequestHandler):
         session_attr["lines_per_second"] = int(0)
         session_attr["monkeys"] = int(0)
         session_attr["cats"] = int(0)
+        session_attr["octopuses"] = int(0)
         #session_attr["facts_index"] = int(2)
         session_attr["times_played"] = int(0)
 
