@@ -1,5 +1,6 @@
 import os
 import time
+import math
 from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 import ask_sdk_dynamodb
@@ -40,11 +41,12 @@ def check_purchase(item2Check):
 
 def check_price(item, session_attr):
     if item == "monkey" or item == "typewriter":
-        cost_of_item = 10
+        cost_of_item = math.pow(5, session_attr['monkeys'] + 1)
     elif item == "cat" or item == "apple":
-        cost_of_item = 500
+        cost_of_item = ((session_attr['cats'] + 1) * 500)
     total_lines = session_attr["total_lines"]
     if (total_lines >= cost_of_item):
+        session_attr['total_lines'] -= cost_of_item
         return True
     return False
 
@@ -132,9 +134,11 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
        
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
+        monkey_cost = int(math.pow(5, session_attr['monkeys'] + 1))
+        cat_cost = int(500 * (session_attr['cats'] + 1))
 
-        speech_text = """Two upgrades available, a monkey/tyepwriter combo.  It costs 10 lines of code,
-                       but produces 1 line of code per second. Or you can purchase a cat with an apple computer for 500 lines of
+        speech_text = f"""Two upgrades available, a monkey/tyepwriter combo.  It costs {monkey_cost} lines of code,
+                       but produces 1 line of code per second. Or you can purchase a cat with an apple computer for {cat_cost} lines of
                        code.  It produces 5 lines of additional code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
@@ -159,6 +163,7 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
         #if (tempUpgrade == null):
             # delegate 
         if check_purchase(tempUpgrade) == True:
+            lines_update(attr)
             if check_price(tempUpgrade, session_attr) == True:
                 speech_text = f"""Thank you for buying a {tempUpgrade}."""
 
