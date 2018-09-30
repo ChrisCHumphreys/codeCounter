@@ -247,6 +247,24 @@ class CodebaseIntentHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
+class QuickMenuIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("QuickMenuIntent")(handler_input)
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        attr = handler_input.attributes_manager.persistent_attributes
+        lines_update(session_attr)
+        total_lines = session_attr["total_lines"]
+        monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
+        cat_cost = int(math.pow(10, session_attr['cats'] + 1))
+        octopus_cost = int(math.pow(50, session_attr['octopuses'] + 1))
+
+        speech_text = f"You have {total_lines} lines.  A monkey costs {monkey_cost}, a cat costs {cat_cost}, and an octopus costs {octopus_cost}"
+        reprompt = "Move along"
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+
 class ResetIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("ResetIntent")(handler_input)
@@ -431,7 +449,8 @@ sb.request_handlers.extend([
     TheBestIntentHandler(),
     DemoCheatIntentHandler(),
     ResetIntentHandler(),
-    CodebaseIntentHandler()
+    CodebaseIntentHandler(),
+    QuickMenuIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
