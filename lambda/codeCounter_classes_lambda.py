@@ -33,7 +33,7 @@ def can_play(session_attr):
     return session_attr['facts_index'] < len(cat_facts)
 
 def check_purchase(item2Check):
-    items = ["monkey", "typewriter", "cat", "apple"]
+    items = ["monkey", "typewriter", "cat", "apple", "octopus"]
     for i in items:
         if (str(item2Check) == i):
             return True
@@ -41,9 +41,11 @@ def check_purchase(item2Check):
 
 def check_price(item, session_attr):
     if item == "monkey" or item == "typewriter":
-        cost_of_item = int(math.pow(5, session_attr['monkeys'] + 1))
+        cost_of_item = int(math.pow(2, session_attr['monkeys'] + 1))
     elif item == "cat" or item == "apple":
-        cost_of_item = ((session_attr['cats'] + 1) * 500)
+        cost_of_item = int(math.pow(10, session_attr['cats'] + 1))
+    elif item == "octopus":
+        cost_of_item = int(math.pow(50, session_attr['octopuses'] + 1))
     total_lines = session_attr["total_lines"]
     if (total_lines >= cost_of_item):
         session_attr['total_lines'] -= cost_of_item
@@ -71,11 +73,11 @@ class LaunchRequestHandler(AbstractRequestHandler):
         if not attr:
             #print("Ran if not")
             attr['times_played'] = 0
-            attr.setdefault("lines_per_second", 1)
+            #attr.setdefault("lines_per_second", 0)
             attr.setdefault("facts_index", -1)
-            attr.setdefault("total_lines", 0)
+            #attr.setdefault("total_lines", 0)
             attr.setdefault("time", int(time.time()))
-            attr.setdefault("monkeys", 0)
+            #attr.setdefault("monkeys", 0)
             attr.setdefault("cats", 0)
         handler_input.attributes_manager.session_attributes = attr
         if can_play(attr):
@@ -89,7 +91,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
                         Right now you have {total_lines} lines of Code.  You can write a line of
                         code or I can read you your available upgrades.
                            """
-            reprompt = "Say start a new game to hear cat facts or no to quit."
+            reprompt = "What would you like to do?"
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
@@ -109,6 +111,18 @@ class TheBestIntentHandler(AbstractRequestHandler):
         reprompt = "Do you agree?"
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+
+class SuggestionIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("SuggestionIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        speech_text = "Well one of the developers does have a problem with commitment,  A K A pushing to the git repo often. I am not going to point any fingers, not that I have any, but the culprit is wearing really dorky pants with pugs on them"
+        reprompt = "No more suggestions"
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 
 class WriteCodeIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -134,12 +148,12 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
        
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
-        monkey_cost = int(math.pow(5, session_attr['monkeys'] + 1))
-        cat_cost = int(500 * (session_attr['cats'] + 1))
+        monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
+        cat_cost = int(math.pow(10, session_attr['cats'] + 1))
+        octopus_cost = int(math.pow(50, session_attr['octopuses'] + 1))
 
-        speech_text = f"""Two upgrades available, a monkey/tyepwriter combo.  It costs {monkey_cost} lines of code,
-                       but produces 1 line of code per second. Or you can purchase a cat with an apple computer for {cat_cost} lines of
-                       code.  It produces 5 lines of additional code per second."""
+        speech_text = f"""Three upgrades available, a monkey who knows how to type on a tyepwriter.  He costs {monkey_cost} lines of code,
+                       and produces 1 line of code per second. Or you can purchase a cat who programs on an apple two computer for {cat_cost} lines of code.  It produces 5 lines of additional code per second.  The last upgrade is an octopus who programs on 4 commodore sixty four's at the same time.  She costs {octopus_cost} and generates 25 lines of code per second."""
 
         reprompt = """If you would like to hear the upgrades again just say Upgrades"""
 
@@ -176,6 +190,9 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
                 elif tempUpgrade == "cat" or tempUpgrade == "apple":
                     session_attr['lines_per_second'] += 5
                     session_attr['cats'] += int(1)
+                elif tempUpgrade == "octopus":
+                    session_attr['lines_per_second'] += 25
+                    session_attr['octopuses'] += int(1)
                 # print(session_attr['lines_per_second'], 'AFTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
                 handler_input.response_builder.speak(speech_text).ask(reprompt)
                 return handler_input.response_builder.response
@@ -204,7 +221,7 @@ class FactNumberIntentHandler(AbstractRequestHandler):
             session_attr = handler_input.attributes_manager.session_attributes
             session_attr["facts_index"] = fact_index
             speech_text = f"""
-                            Here's a cat fact: {current_fact} 
+                          Here's a cat fact: {current_fact} 
                             Want to hear another fact?
                            """
             reprompt = "Say yes to hear a cat fact or no to quit."
@@ -229,18 +246,56 @@ class LinesPerSecondIntentHandler(AbstractRequestHandler):
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
-class StartOverIntentHandler(AbstractRequestHandler):
+class CodebaseIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return is_intent_name("AMAZON.StartOverIntent")(handler_input)
-
+        return is_intent_name("CodebaseIntent")(handler_input)
     def handle(self, handler_input):
-        # restart playing the facts from the first one
         session_attr = handler_input.attributes_manager.session_attributes
-        session_attr["facts_index"] = -1
-        speech_text = f"You'll now start a new {SKILL_NAME} game. Want to hear a new fact?"
-        reprompt = "Say yes to hear a new fact or no to stop the game."
+        attr = handler_input.attributes_manager.persistent_attributes
+        lines_update(session_attr)
+        total_lines = session_attr["total_lines"]
+        speech_text = f"You have written {total_lines} lines of code."
+        reprompt = "Move along"
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+
+class QuickMenuIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("QuickMenuIntent")(handler_input)
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        attr = handler_input.attributes_manager.persistent_attributes
+        lines_update(session_attr)
+        total_lines = session_attr["total_lines"]
+        monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
+        cat_cost = int(math.pow(10, session_attr['cats'] + 1))
+        octopus_cost = int(math.pow(50, session_attr['octopuses'] + 1))
+
+        speech_text = f"You have {total_lines} lines.  A monkey costs {monkey_cost}, a cat costs {cat_cost}, and an octopus costs {octopus_cost}"
+        reprompt = "Move along"
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+
+class ResetIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("ResetIntent")(handler_input)
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr["total_lines"] = int(0)
+        session_attr["lines_per_second"] = int(0)
+        session_attr["monkeys"] = int(0)
+        session_attr["cats"] = int(0)
+        session_attr["octopuses"] = int(0)
+        #session_attr["facts_index"] = int(2)
+        session_attr["times_played"] = int(0)
+
+        speech_text = "You lost your company and all of your code in a particulary viscious legal battle with an animal rights group"
+        reprompt = "Would you like to start over?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -252,6 +307,21 @@ class HelpIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
+
+class DemoCheatIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("DemoCheatIntent")(handler_input)
+    def handle(self, handler_input):
+        slots = handler_input.request_envelope.request.intent.slots
+        session_attr = handler_input.attributes_manager.session_attributes
+        cheatAmount = int(slots["cheat_amount"].value)
+        session_attr["total_lines"] += cheatAmount
+        speech_text = "You cheated on me, I can not believe it. I loved you!"
+        reprompt = "Are you at least sorry?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
 
 def persist_user_attributes(handler_input):
     session_attr = handler_input.attributes_manager.session_attributes
@@ -292,8 +362,8 @@ class YesIntentHandler(AbstractRequestHandler):
         session_attr["facts_index"] += 1
         if can_play(session_attr):
             current_fact = cat_facts[session_attr["facts_index"]]
-            speech_text = f"Here's a cat fact: {current_fact} Want to hear another fact?"
-            reprompt = "Say yes to hear a cat fact or no to quit."
+            speech_text = f"I am not sure what you mean try again"
+            reprompt = "Please state what you would like to do?"
         else:
             speech_text = """
                            There are no more cat facts for me to tell you. 
@@ -361,6 +431,18 @@ class LoggingResponseInterceptor(AbstractResponseInterceptor):
     def process(self, handler_input, response):
         print(f"Response : {response}")
 
+class StartOverIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("StartOverIntent")(handler_input)
+    def handle(self, handler_input):
+
+        speech_text = "This should never run"
+        reprompt = "Would you like to start over?"
+
+        handler_input.response_builder.speak(speech_text).ask(reprompt)
+        return handler_input.response_builder.response
+
+
 # Need to explicitly register each one
 sb.request_handlers.extend([
     LaunchRequestHandler(),
@@ -376,7 +458,12 @@ sb.request_handlers.extend([
     ListUpgradesIntentHandler(),
     BuyUpgradeIntentHandler(),
     LinesPerSecondIntentHandler(),
-    TheBestIntentHandler()
+    TheBestIntentHandler(),
+    DemoCheatIntentHandler(),
+    ResetIntentHandler(),
+    CodebaseIntentHandler(),
+    QuickMenuIntentHandler(),
+    SuggestionIntentHandler()
 ])
 
 sb.add_exception_handler(AllExceptionHandler())
