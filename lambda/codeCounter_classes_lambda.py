@@ -4,7 +4,6 @@ import math
 from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.utils import is_request_type, is_intent_name
 import ask_sdk_dynamodb
-# from data import cat_facts
 from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler, \
     AbstractRequestInterceptor, AbstractResponseInterceptor
 
@@ -12,10 +11,10 @@ skill_persistence_table = os.environ["skill_persistence_table"]
 
 SKILL_NAME = 'code counter'
 sb = StandardSkillBuilder(
-    table_name=skill_persistence_table, auto_create_table=False, 
+    table_name=skill_persistence_table, auto_create_table=False,
 partition_keygen=ask_sdk_dynamodb.partition_keygen.user_id_partition_keygen)
 
-
+'''
 cat_facts = [
 "A cat usually has about 12 whiskers on each side of its face.",
 "On average, cats spend 2/3 of every day sleeping. That means a nine-year-old cat has been awake for only three years of its life.",
@@ -28,9 +27,11 @@ cat_facts = [
 "Cats are extremely sensitive to vibrations. Cats are said to detect earthquake tremors 10 or 15 minutes before humans can.",
 "A cat's heart beats nearly twice as fast as a human heart, at 110 to 140 beats a minute."
 ]
+'''
 
 def can_play(session_attr):
-    return session_attr['facts_index'] < len(cat_facts)
+    # return session_attr['facts_index'] < len(cat_facts)
+    return session_attr['facts_index'] < 10
 
 def check_purchase(item2Check):
     items = ["monkey", "typewriter", "cat", "apple", "octopus"]
@@ -66,20 +67,27 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
-        #problem with this line
-        linesPerSecond = attr["lines_per_second"]
-        lines_update(attr)
-        total_lines = attr["total_lines"]
+        # problem with this line
         if not attr:
             #print("Ran if not")
             attr['times_played'] = 0
-            #attr.setdefault("lines_per_second", 0)
-            attr.setdefault("facts_index", -1)
-            #attr.setdefault("total_lines", 0)
+            attr.setdefault("lines_per_second", 0)
+            attr.setdefault("facts_index", 2)
+            attr.setdefault("total_lines", 0)
+            print('timeeeeeeeeeeeeeeeeeeeeeeeeeeee = ')
             attr.setdefault("time", int(time.time()))
-            #attr.setdefault("monkeys", 0)
+            attr.setdefault("monkeys", 0)
             attr.setdefault("cats", 0)
+            attr.setdefault("octopuses", 0)
+
+            session_attr = handler_input.attributes_manager.session_attributes
+            handler_input.attributes_manager.persistent_attributes = session_attr
+            handler_input.attributes_manager.save_persistent_attributes()
+
         handler_input.attributes_manager.session_attributes = attr
+        linesPerSecond = attr["lines_per_second"]
+        lines_update(attr)
+        total_lines = attr["total_lines"]
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
                 Right now you have {total_lines} lines of Code.  You can write a line of
@@ -87,7 +95,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
             reprompt = "Say yes to play the game or no to quit."
         else:
             speech_text = f"""
-                        Welcome to {SKILL_NAME}. 
+                        Welcome to {SKILL_NAME}.
                         Right now you have {total_lines} lines of Code.  You can write a line of
                         code or I can read you your available upgrades.
                            """
@@ -98,12 +106,12 @@ class LaunchRequestHandler(AbstractRequestHandler):
 class TheBestIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("TheBestIntent")(handler_input)
-    
+
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
         speech_text = """
-                        Brayden is totally the best. 
-                        He is so much better than whoever the other guy who worked on me is. 
+                        Brayden is totally the best.
+                        He is so much better than whoever the other guy who worked on me is.
                         Brayden is just like so amazing. He just does all of the things so well, has great abs, and totally is not a narcissist who is making me say this.
                         The other guy who worked on me is so totally not awesome.
                         He also takes a really long time in the bathroom which worries me.
@@ -145,7 +153,7 @@ class WriteCodeIntentHandler(AbstractRequestHandler):
 class ListUpgradesIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("ListUpgradesIntent")(handler_input)
-       
+
     def handle(self, handler_input):
         session_attr = handler_input.attributes_manager.session_attributes
         monkey_cost = int(math.pow(2, session_attr['monkeys'] + 1))
@@ -163,7 +171,7 @@ class ListUpgradesIntentHandler(AbstractRequestHandler):
 class BuyUpgradeIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("BuyUpgradeIntent")(handler_input)
-       
+
     def handle(self, handler_input):
         attr = handler_input.attributes_manager.persistent_attributes
         session_attr = handler_input.attributes_manager.session_attributes
@@ -173,9 +181,9 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
         slots = handler_input.request_envelope.request.intent.slots
         tempUpgrade = slots['upgrade'].value
         #print("HERE!!!!!", slots['upgrade'].value)
-        
+
         #if (tempUpgrade == null):
-            # delegate 
+            # delegate
         if check_purchase(tempUpgrade) == True:
             lines_update(attr)
             if check_price(tempUpgrade, session_attr) == True:
@@ -205,7 +213,7 @@ class BuyUpgradeIntentHandler(AbstractRequestHandler):
             speech_text = f"""{tempUpgrade} is not a valid item."""
 
             reprompt = """Please say buy and the name of a valid item to purchase an upgrade"""
-            
+
             handler_input.response_builder.speak(speech_text).ask(reprompt)
             return handler_input.response_builder.response
 
@@ -221,13 +229,13 @@ class FactNumberIntentHandler(AbstractRequestHandler):
             session_attr = handler_input.attributes_manager.session_attributes
             session_attr["facts_index"] = fact_index
             speech_text = f"""
-                          Here's a cat fact: {current_fact} 
+                          Here's a cat fact: {current_fact}
                             Want to hear another fact?
                            """
             reprompt = "Say yes to hear a cat fact or no to quit."
         else:
             speech_text = """
-                           There are no more cat facts for me to tell you. 
+                           There are no more cat facts for me to tell you.
                            Start a new game to rehear the facts or say no to quit.
                           """
             reprompt = "Say a number between 1 and 10 to get a fact."
@@ -302,8 +310,8 @@ class HelpIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
 
     def handle(self, handler_input):
-        speech_text = "I will tell you a fun fact about cats."
-        reprompt = "Say yes to hear a fact."
+        speech_text = "To write a line of code, Just say write a line of code.  Say list upgrades to hear your current options, or say quick menu for the quick purchase options."
+        reprompt = "Say list upgrades to hear your current options."
 
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
@@ -357,7 +365,10 @@ class YesIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.YesIntent")(handler_input)
 
     def handle(self, handler_input):
-        session_attr = handler_input.attributes_manager.session_attributes
+        speech_text = "I am not sure what you mean."
+        reprompt = "I am not sure what you mean."
+
+        '''session_attr = handler_input.attributes_manager.session_attributes
         session_attr.setdefault("facts_index", -1)
         session_attr["facts_index"] += 1
         if can_play(session_attr):
@@ -366,11 +377,11 @@ class YesIntentHandler(AbstractRequestHandler):
             reprompt = "Please state what you would like to do?"
         else:
             speech_text = """
-                           There are no more cat facts for me to tell you. 
+                           There are no more cat facts for me to tell you.
                            Start a new game to rehear the facts or say no to quit.
                           """
             reprompt = "Say start a new game to hear cat facts or no to quit."
-
+        '''
         handler_input.response_builder.speak(speech_text).ask(reprompt)
         return handler_input.response_builder.response
 
