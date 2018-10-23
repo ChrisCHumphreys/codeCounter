@@ -70,23 +70,23 @@ class LaunchRequestHandler(AbstractRequestHandler):
         # problem with this line
         if not attr:
             #print("Ran if not")
-            attr['times_played'] = 0
+            attr.setdefault('times_played', 0)
             attr.setdefault("lines_per_second", 0)
             attr.setdefault("facts_index", 2)
             attr.setdefault("total_lines", 0)
-            print('timeeeeeeeeeeeeeeeeeeeeeeeeeeee = ')
             attr.setdefault("time", int(time.time()))
             attr.setdefault("monkeys", 0)
             attr.setdefault("cats", 0)
             attr.setdefault("octopuses", 0)
 
-            session_attr = handler_input.attributes_manager.session_attributes
-            handler_input.attributes_manager.persistent_attributes = session_attr
+            #session_attr = handler_input.attributes_manager.session_attributes
+            #handler_input.attributes_manager.persistent_attributes = session_attr
             handler_input.attributes_manager.save_persistent_attributes()
+            session_attr = handler_input.attributes_manager.persistent_attributes
 
         handler_input.attributes_manager.session_attributes = attr
-        linesPerSecond = attr["lines_per_second"]
-        lines_update(attr)
+        # linesPerSecond = attr["lines_per_second"]
+        # lines_update(attr)
         total_lines = attr["total_lines"]
         if can_play(attr):
             speech_text = f'''Welcome to {SKILL_NAME}. Want to play?
